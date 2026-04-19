@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role     @default(USER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  pagesUpdated        Page[]               @relation("UpdatedBy")
+  diagnosticEvents    DiagnosticEvent[]    @relation("CreatedBy")
+  diagnosticConfigs   DiagnosticConfig[]   @relation("ConfigUpdatedBy")
+  diagnosticResults   DiagnosticResult[]
+}
+
+enum Role {
+  VISITOR
+  USER
+  ADMIN
+}
+
+model MenuItem {
+  id        String     @id @default(uuid())
+  label     String
+  slug      String     @unique
+  position  Int
+  isVisible Boolean    @default(true)
+  parentId  String?
+  parent    MenuItem?  @relation("SubMenus", fields: [parentId], references: [id])
+  children  MenuItem[] @relation("SubMenus")
+  page      Page?
+  updatedAt DateTime   @updatedAt
+}
+
+model Page {
+  id         String   @id @default(uuid())
+  title      String
+  content    String
+  updatedAt  DateTime @updatedAt
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId String   @unique
+  updatedBy  User?    @relation("UpdatedBy", fields: [updatedById], references: [id])
+  updatedById String?
+}
+
+model DiagnosticEvent {
+  id           String   @id @default(uuid())
+  label        String
+  stressPoints Int
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  createdBy    User?    @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById  String?
+}
+
+model DiagnosticConfig {
+  id          String   @id @default(uuid())
+  resultLabel String
+  scoreMin    Int
+  scoreMax    Int
+  description String
+  updatedAt   DateTime @updatedAt
+  updatedBy   User?    @relation("ConfigUpdatedBy", fields: [updatedById], references: [id])
+  updatedById String?
+}
+
+model DiagnosticResult {
+  id               String   @id @default(uuid())
+  totalScore       Int
+  interpretation   String
+  selectedEventIds Json
+  takenAt          DateTime @default(now())
+  user             User?    @relation(fields: [userId], references: [id])
+  userId           String?
+}
