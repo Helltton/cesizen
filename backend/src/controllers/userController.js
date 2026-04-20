@@ -79,3 +79,15 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
+
+exports.reactivateUser = async (req, res) => {
+  try {
+    await prisma.user.update({
+      where: { id: req.params.id },
+      data: { isActive: true }
+    });
+    res.json({ message: 'Compte réactivé' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};

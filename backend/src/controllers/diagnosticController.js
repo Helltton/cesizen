@@ -122,3 +122,38 @@ exports.createConfig = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
+
+exports.getAllEvents = async (req, res) => {
+  try {
+    const events = await prisma.diagnosticEvent.findMany({
+      orderBy: { stressPoints: 'desc' }
+    });
+    res.json(events);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+exports.activateEvent = async (req, res) => {
+  try {
+    await prisma.diagnosticEvent.update({
+      where: { id: req.params.id },
+      data: { isActive: true }
+    });
+    res.json({ message: 'Événement réactivé' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+exports.getUserResults = async (req, res) => {
+  try {
+    const results = await prisma.diagnosticResult.findMany({
+      where: { userId: req.user.id },
+      orderBy: { takenAt: 'desc' }
+    });
+    res.json(results);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
