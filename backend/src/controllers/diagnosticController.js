@@ -19,11 +19,13 @@ exports.submit = async (req, res) => {
     const { selectedEventIds } = req.body;
     if (!selectedEventIds?.length)
       return res.status(400).json({ error: 'Aucun événement sélectionné' });
+
     const allEvents = await prisma.diagnosticEvent.findMany({ where: { isActive: true } });
     const configs = await prisma.diagnosticConfig.findMany();
     const snapshot = buildSnapshot(selectedEventIds, allEvents);
     const score = computeScore(snapshot.map(e => e.stressPoints));
     const config = getInterpretation(score, configs);
+
     const result = await prisma.diagnosticResult.create({
       data: {
         totalScore: score,
@@ -32,7 +34,12 @@ exports.submit = async (req, res) => {
         userId: req.user?.id || null,
       }
     });
-    res.status(201).json({ score, interpretation: config, resultId: result.id });
+
+    res.status(201).json({
+      score,
+      interpretation: config,
+      resultId: result.id
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -153,6 +160,15 @@ exports.getUserResults = async (req, res) => {
       orderBy: { takenAt: 'desc' }
     });
     res.json(results);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+exports.deleteConfig = async (req, res) => {
+  try {
+    await prisma.diagnosticConfig.delete({ where: { id: req.params.id } });
+    res.json({ message: 'Tranche supprimée' });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

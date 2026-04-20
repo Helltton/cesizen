@@ -5,7 +5,8 @@ const optionalAuth = require('../middlewares/optionalAuth');
 const {
   getEvents, submit, getResult, getUserResults,
   createEvent, updateEvent, deactivateEvent, activateEvent,
-  getConfigs, updateConfig, createConfig, getAllEvents
+  getConfigs, updateConfig, createConfig, deleteConfig,
+  getAllEvents
 } = require('../controllers/diagnosticController');
 
 router.get('/events', getEvents);
@@ -20,5 +21,7 @@ router.get('/admin/config', auth, requireAdmin, getConfigs);
 router.post('/admin/config', auth, requireAdmin, createConfig);
 router.put('/admin/config/:id', auth, requireAdmin, updateConfig);
 router.get('/my-results', auth, getUserResults);
+router.delete('/admin/config/:id', auth, requireAdmin, deleteConfig);
+router.get('/configs-public', getConfigs);
 
 module.exports = router;

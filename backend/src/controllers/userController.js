@@ -91,3 +91,34 @@ exports.reactivateUser = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
+
+exports.updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!newPassword || newPassword.length < 8)
+      return res.status(400).json({ error: 'Mot de passe trop court' });
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    const { verifyPassword, hashPassword } = require('../services/authService');
+    const ok = await verifyPassword(currentPassword, user.passwordHash);
+    if (!ok) return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { passwordHash: await hashPassword(newPassword) }
+    });
+    res.json({ message: 'Mot de passe modifié' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+exports.deleteMe = async (req, res) => {
+  try {
+    await prisma.diagnosticResult.deleteMany({ where: { userId: req.user.id } });
+    await prisma.user.delete({ where: { id: req.user.id } });
+    res.json({ message: 'Compte supprimé' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};

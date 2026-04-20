@@ -14,6 +14,8 @@ import AdminDiagnostic from './pages/admin/AdminDiagnostic';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import MesResultats from './pages/MesResultats';
+import AdminPages from './pages/admin/AdminPages';
+import MonCompte from './pages/MonCompte';
 
 export default function App() {
   return (
@@ -47,6 +49,12 @@ export default function App() {
           } />
           <Route path="/mes-resultats" element={
             <ProtectedRoute><MesResultats /></ProtectedRoute>
+          } />
+          <Route path="/admin/pages" element={
+            <AdminRoute><AdminPages /></AdminRoute>
+          } />
+          <Route path="/mon-compte" element={
+            <ProtectedRoute><MonCompte /></ProtectedRoute>
           } />
         </Routes>
         <Footer />
